@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#f6f7f2" />
+  <meta name="description" content="A private, offline-first Japanese revision loop." />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="styles.css" />
+  <title>Nihon Loop</title>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <button class="brand" data-view="home" aria-label="Go home">
+        <span class="brand-mark">日</span>
+        <span><strong>Nihon Loop</strong><small>remember everything</small></span>
+      </button>
+      <button class="icon-button" id="settings-button" aria-label="Settings">•••</button>
+    </header>
+
+    <main id="app" tabindex="-1"></main>
+
+    <nav class="bottom-nav" aria-label="Main navigation">
+      <button data-view="home" class="active"><span>⌂</span>Home</button>
+      <button data-view="review"><span>↻</span>Review</button>
+      <button data-view="library"><span>▦</span>Pages</button>
+      <button data-view="cards"><span>＋</span>Cards</button>
+    </nav>
+  </div>
+
+  <dialog id="card-dialog">
+    <form method="dialog" id="card-form">
+      <div class="dialog-head"><div><p class="eyebrow">CUSTOM CARD</p><h2>Add something to remember</h2></div><button value="cancel" class="close-button" aria-label="Close">×</button></div>
+      <label>Japanese<input required name="jp" placeholder="例：図書館" /></label>
+      <label>Reading<input name="kana" placeholder="としょかん" /></label>
+      <label>Meaning<input required name="meaning" placeholder="圖書館 · library" /></label>
+      <label>Example / note<textarea name="example" rows="3" placeholder="図書館へ行きます。"></textarea></label>
+      <button class="primary-button full" value="default">Save card</button>
+    </form>
+  </dialog>
+
+  <dialog id="settings-dialog">
+    <div class="dialog-head"><div><p class="eyebrow">YOUR DATA</p><h2>Settings</h2></div><button class="close-button" data-close-settings aria-label="Close">×</button></div>
+    <p class="muted">Everything stays on this device. Export a backup any time.</p>
+    <div class="settings-actions">
+      <button id="export-button" class="secondary-button">Export progress</button>
+      <label class="secondary-button file-label">Import backup<input id="import-input" type="file" accept="application/json" /></label>
+      <button id="reset-button" class="danger-button">Reset progress</button>
+    </div>
+  </dialog>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>
