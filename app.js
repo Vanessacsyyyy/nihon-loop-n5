@@ -252,7 +252,7 @@ const photos = [
   ...[1863,1864,1865,1866,1867,1868,1869,1870,1873,1876,1878,1879,1888,1892,1898,1901,1904,1909,1910,1911,1912,1913,1921,1922,1924,1926,1928,1929,1930,1932,1936,1938,1939,1940,1941,1942,1943,1944,1945,1946,1947,1948,1950].map(n=>`IMG_${n}.jpg`)
 ];
 const STORE = 'nihon-loop-v1';
-const freshState = () => ({ progress:{}, custom:[], sessions:0, reviews:0, xp:0, hearts:5, streak:0, lastStudy:'', studiedPages:[], direction:'jp', session:null, drill:null });
+const freshState = () => ({ progress:{}, custom:[], sessions:0, reviews:0, xp:0, hearts:5, streak:0, lastStudy:'', studiedPages:[], direction:'jp', session:null, drill:null, recentQuestions:{} });
 const defaultState = freshState();
 let state = load();
 let currentView = 'home';
@@ -265,6 +265,11 @@ function load(){
 }
 function save(){ localStorage.setItem(STORE, JSON.stringify(state)); }
 function allCards(){ return [...starterCards, ...state.custom]; }
+function shuffled(items){
+  const copy=[...items];
+  for(let i=copy.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[copy[i],copy[j]]=[copy[j],copy[i]];}
+  return copy;
+}
 function progress(id){ return state.progress[id] || {level:0, due:0, seen:0, lapses:0}; }
 function isDue(card){ return progress(card.id).due <= Date.now(); }
 function mastered(card){ return progress(card.id).level >= 4; }
@@ -339,8 +344,8 @@ function renderHome(){
 function renderPracticeHub(){
   const due=allCards().filter(isDue).length;
   const modes=[
-    ['mixed','DAILY MIX','每日混合訓練','Different question each time','翻卡、選擇與鍵盤輸入交替出現，避免只靠認答案位置。'],
-    ['numberWritten','NUMBER SPRINT','數字特訓','Dates · time · prices · counters','集中用鍵盤寫月份、日子、星期、時間、樓層、價錢及量詞。'],
+    ['mixed','DAILY MIX','每日隨機混合訓練','20 fresh questions','每輪重新抽題及隨機轉換翻卡、選擇和鍵盤輸入，並避開上一輪題目。'],
+    ['numberWritten','NUMBER SPRINT','隨機數字特訓','20 of 74 each round','每輪隨機抽 20 題，用鍵盤寫月份、日子、星期、時間、樓層、價錢及量詞。'],
     ['flip','LEVEL 1','Flip cards','Chinese → Japanese','Tap to reveal Japanese, romaji, and a sentence.'],
     ['mcMeaning','LEVEL 2','Meaning MC','Japanese → Chinese','Build fast recognition with four choices.'],
     ['mcJapanese','LEVEL 3','Japanese MC','Chinese → Japanese','Recall the Japanese from its Chinese meaning.'],
@@ -367,14 +372,25 @@ function makeQueue(options={}){
   let pool=allCards().filter(c=>!options.topic || c.topic===options.topic);
   if(!options.all) pool=pool.filter(isDue);
   if(!pool.length) pool=allCards().filter(c=>!options.topic || c.topic===options.topic);
-  return pool.sort(()=>Math.random()-.5).map(c=>c.id);
+  pool=shuffled(pool);
+  if(['mixed','numberWritten'].includes(options.mode)){
+    const recent=new Set((state.recentQuestions||{})[options.mode]||[]);
+    const unseen=pool.filter(c=>!recent.has(c.id));
+    const repeated=pool.filter(c=>recent.has(c.id));
+    return [...unseen,...repeated].slice(0,20).map(c=>c.id);
+  }
+  return pool.map(c=>c.id);
 }
 function startReview(options={}){
   currentView='review';
   document.querySelectorAll('.bottom-nav button').forEach(b=>b.classList.toggle('active', b.dataset.view==='review'));
   if(options.mode || !state.session || options.all || options.topic){
     const queue=makeQueue(options);
-    state.session={queue, initial:queue.length, completed:0, topic:options.topic||'', mode:options.mode||'flip', revealed:false, feedback:null, optionIds:null, questionMode:null}; save();
+    if(['mixed','numberWritten'].includes(options.mode)){
+      state.recentQuestions=state.recentQuestions||{};
+      state.recentQuestions[options.mode]=queue.slice(0,30);
+    }
+    state.session={queue, initial:queue.length, completed:0, topic:options.topic||'', mode:options.mode||'flip', revealed:false, feedback:null, optionIds:null, questionMode:null, lastQuestionMode:null}; save();
   }
   renderReview();
 }
@@ -383,7 +399,7 @@ function startDrill(mode){
   currentView='review';
   const wanted=mode==='cloze'?'cloze':'mc';
   const pool=(window.lessonDrills||[]).filter(d=>d.t===wanted).map((d,i)=>({...d,id:`${wanted}-${i}`}));
-  state.drill={mode,queue:pool.sort(()=>Math.random()-.5),initial:pool.length,clear:0,chosen:[],feedback:null};
+  state.drill={mode,queue:shuffled(pool),initial:pool.length,clear:0,chosen:[],feedback:null};
   save(); renderDrill();
 }
 function renderDrill(){
@@ -418,9 +434,9 @@ function acceptedAnswers(card){
   return [...card.jp.split(/[／/]/), ...romajiFor(card).split(/[／/]/)].map(normalizeAnswer);
 }
 function buildOptions(card){
-  const same=allCards().filter(c=>c.id!==card.id && c.topic===card.topic).sort(()=>Math.random()-.5);
-  const other=allCards().filter(c=>c.id!==card.id && c.topic!==card.topic).sort(()=>Math.random()-.5);
-  return [card,...same,...other].filter((c,i,a)=>a.findIndex(x=>x.id===c.id)===i).slice(0,4).sort(()=>Math.random()-.5).map(c=>c.id);
+  const same=shuffled(allCards().filter(c=>c.id!==card.id && c.topic===card.topic));
+  const other=shuffled(allCards().filter(c=>c.id!==card.id && c.topic!==card.topic));
+  return shuffled([card,...same,...other].filter((c,i,a)=>a.findIndex(x=>x.id===c.id)===i).slice(0,4)).map(c=>c.id);
 }
 function renderReview(){
   const s=state.session;
@@ -429,7 +445,14 @@ function renderReview(){
   if(!card){ s.queue.shift(); save(); renderReview(); return; }
   const pct=Math.round(s.completed/Math.max(1,s.initial)*100);
   const modeNames={flip:'Flip card',mcMeaning:'Meaning MC',mcJapanese:'Japanese MC',written:'Written answer',mixed:'Daily Mix',numberWritten:'Number Sprint'};
-  if(!s.questionMode){s.questionMode=s.mode==='mixed'?['mcMeaning','mcJapanese','written'][s.completed%3]:s.mode==='numberWritten'?'written':s.mode;save();}
+  if(!s.questionMode){
+    if(s.mode==='mixed'){
+      const choices=shuffled(['flip','mcMeaning','mcJapanese','written']).filter(mode=>mode!==s.lastQuestionMode);
+      s.questionMode=choices[0];
+    }else s.questionMode=s.mode==='numberWritten'?'written':s.mode;
+    s.lastQuestionMode=s.questionMode;
+    save();
+  }
   const activeMode=s.questionMode;
   if((activeMode==='mcMeaning'||activeMode==='mcJapanese')&&!s.optionIds){s.optionIds=buildOptions(card);save();}
   const optionCards=(s.optionIds||[]).map(id=>allCards().find(c=>c.id===id)).filter(Boolean);
