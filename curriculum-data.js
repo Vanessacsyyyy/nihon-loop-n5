@@ -24,7 +24,7 @@ const pronunciationRows = [
 ];
 
 window.pronunciationCards = pronunciationRows.map((x,i)=>({
-  id:`p${i+1}`, jp:x[0], kana:x[1], meaning:x[2], topic:'Pronunciation',
+  id:`pr${i+1}`, jp:x[0], kana:x[1], meaning:x[2], topic:'Pronunciation',
   example:`${x[0]}。音のポイント：${x[3]}。`, pronunciationGroup:x[3],
   source:'IMG_1786–1793', sourceKind:'課本原文 · 人工核對', lesson:'pronunciation', custom:false
 }));
