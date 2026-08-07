@@ -4,10 +4,10 @@
   --paper: #f6f7f2;
   --card: #ffffff;
   --line: #dfe4dd;
-  --green: #22764d;
-  --green-deep: #155b39;
-  --green-soft: #dff2e7;
-  --lime: #cde96b;
+  --green: #58cc02;
+  --green-deep: #2f7d00;
+  --green-soft: #e7f8d8;
+  --lime: #58cc02;
   --orange: #f09b58;
   --red: #c85454;
   --shadow: 0 16px 44px rgba(23, 32, 27, .09);
@@ -52,7 +52,7 @@ h3 { font-size: 17px; letter-spacing: -.02em; }
 
 .primary-button, .secondary-button, .danger-button { border: 0; border-radius: 16px; min-height: 50px; padding: 0 18px; font-weight: 800; cursor: pointer; transition: transform .15s, opacity .15s; }
 button:active { transform: scale(.97); }
-.primary-button { color: var(--ink); background: var(--lime); }
+.primary-button { color: white; background: var(--lime); box-shadow: 0 5px 0 #3da600; margin-bottom: 5px; }
 .secondary-button { background: white; border: 1px solid var(--line); }
 .danger-button { color: var(--red); background: #fff0f0; border: 1px solid #f0cccc; }
 .full { width: 100%; }
@@ -127,6 +127,13 @@ button:active { transform: scale(.97); }
 .written-form label { color: var(--muted); font-size: 12px; font-weight: 850; text-transform: uppercase; letter-spacing: .08em; }
 .written-form input { width: 100%; min-height: 62px; border: 1px solid var(--line); border-radius: 16px; padding: 0 16px; font-size: 20px; outline: none; }
 .written-form input:focus { border-color: var(--green); box-shadow: 0 0 0 3px var(--green-soft); }
+.duo-status { display:flex; justify-content:space-around; gap:8px; margin-bottom:16px; font-weight:900; color:#677278; }
+.sentence-prompt { font-size:clamp(26px,7vw,42px); line-height:1.25; margin:28px 0 22px; }
+.sentence-answer { min-height:94px; border-bottom:2px solid var(--line); border-top:2px solid var(--line); padding:13px 4px; display:flex; flex-wrap:wrap; align-content:center; gap:8px; margin-bottom:20px; }
+.sentence-answer span { color:var(--muted); font-size:13px; margin:auto; }
+.sentence-answer button,.word-bank button { border:2px solid #d9dfe2; border-bottom-width:5px; background:white; border-radius:14px; padding:11px 13px; font-weight:850; cursor:pointer; }
+.word-bank { display:flex; flex-wrap:wrap; justify-content:center; gap:9px; margin:20px 0 28px; min-height:80px; }
+.word-bank button:active,.sentence-answer button:active { border-bottom-width:2px; transform:translateY(3px); }
 .answer { border-top: 1px solid var(--line); margin-top: auto; padding-top: 21px; animation: rise .25s ease both; }
 .answer strong { font-size: 21px; }
 .example { margin: 13px 0 0; padding: 13px 14px; background: var(--paper); border-radius: 13px; color: #424a44; line-height: 1.45; }

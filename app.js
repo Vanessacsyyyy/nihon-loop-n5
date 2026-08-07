@@ -198,11 +198,14 @@ const extraCards = [
   ['〜ませんか','〜ませんか','一起～嗎 · invitation','N5 Grammar','いっしょに映画を見ませんか。']
 ].map((x, i) => ({ id: `e${i+1}`, jp:x[0], kana:x[1], meaning:x[2], topic:x[3], example:x[4], custom:false }));
 
-const starterCards = [...baseCards, ...extraCards];
+const starterCards = [...baseCards, ...extraCards, ...(window.photoCards || [])];
 
-const photos = Array.from({length:56}, (_,i) => `IMG_${1786+i}.jpg`);
+const photos = [
+  ...Array.from({length:56}, (_,i) => `IMG_${1786+i}.jpg`),
+  ...[1863,1864,1865,1866,1867,1868,1869,1870,1873,1876,1878,1879,1888,1892,1898,1901,1904,1909,1910,1911,1912,1913,1921,1922,1924,1926,1928,1929,1930,1932,1936,1938,1939,1940,1941,1942,1943,1944,1945,1946,1947,1948,1950].map(n=>`IMG_${n}.jpg`)
+];
 const STORE = 'nihon-loop-v1';
-const freshState = () => ({ progress:{}, custom:[], sessions:0, reviews:0, streak:0, lastStudy:'', studiedPages:[], direction:'jp', session:null });
+const freshState = () => ({ progress:{}, custom:[], sessions:0, reviews:0, xp:0, hearts:5, streak:0, lastStudy:'', studiedPages:[], direction:'jp', session:null, drill:null });
 const defaultState = freshState();
 let state = load();
 let currentView = 'home';
@@ -263,22 +266,22 @@ function renderHome(){
   const pct=Math.round(done/cards.length*100);
   const topics=[['Basics','あ'],['Numbers','一'],['Family tree','家'],['Directions','↗'],['Actions','今'],['N5 Grammar','文'],['Places','駅'],['People','人'],['Family','族'],['Things','本'],['Questions','？'],['Time','時'],['Verbs','動'],['Particles','を']];
   document.querySelector('#app').innerHTML=`
-    <section class="hero"><p class="eyebrow">今日も少しずつ</p><h1>Small loops.<br>Long memory.</h1><p class="lead">Your lesson photos, turned into a repeatable routine. Cards you miss return in the same session until the queue is clear.</p></section>
+    <section class="hero"><p class="eyebrow">30-DAY N5 EXAM PATH</p><h1>每日答到熟。<br>錯題不停返嚟。</h1><p class="lead">根據你影的課本頁製作：vocab、日期、星期、價錢、助詞、存在句、過去式、否定句及日文問句。</p></section>
     <section class="today-card">
       <div class="today-top"><div><p class="eyebrow">TODAY'S LOOP</p><h2>${due ? 'Ready when you are.' : 'Queue cleared!'}</h2><p>${due ? `${due} cards are waiting. Missed ones loop back until you remember them.` : 'You remembered every card due now. Try a full cram or browse your lesson pages.'}</p></div><div class="due-badge"><span>${due}<small>DUE</small></span></div></div>
-      <button class="primary-button" data-start-review>${due ? 'Start review →' : 'Cram all cards →'}</button>
+      <button class="primary-button" data-start-review>開始今日 Duolingo 式填充 →</button>
       <div class="progress-track"><i style="width:${pct}%"></i></div>
     </section>
     <div class="section-head"><h2>Your rhythm</h2><p>Saved on this phone</p></div>
     <section class="stats-grid">
-      <div class="stat"><strong>${state.streak}</strong><span>day streak</span></div>
-      <div class="stat"><strong>${pct}%</strong><span>mastered</span></div>
-      <div class="stat"><strong>${state.reviews}</strong><span>answers</span></div>
+      <div class="stat"><strong>🔥 ${state.streak}</strong><span>day streak</span></div>
+      <div class="stat"><strong>⭐ ${state.xp||0}</strong><span>XP earned</span></div>
+      <div class="stat"><strong>💚 ${state.hearts||5}</strong><span>hearts</span></div>
     </section>
     <div class="section-head"><h2>Study by topic</h2><p>${cards.length} cards</p></div>
     <section class="topic-grid">${topics.map(([t,icon])=>{const n=cards.filter(c=>c.topic===t).length; return `<button class="topic-card" data-topic="${t}"><span class="topic-icon">${icon}</span><span><strong>${t}</strong><small>${n} cards</small></span></button>`}).join('')}</section>
   `;
-  document.querySelector('[data-start-review]').onclick=()=>startReview({all:!due,mode:'flip'});
+  document.querySelector('[data-start-review]').onclick=()=>startDrill('cloze');
   document.querySelectorAll('[data-topic]').forEach(b=>b.onclick=()=>startReview({topic:b.dataset.topic,all:true,mode:'flip'}));
 }
 
@@ -288,7 +291,9 @@ function renderPracticeHub(){
     ['flip','LEVEL 1','Flip cards','Chinese → Japanese','Tap to reveal Japanese, romaji, and a sentence.'],
     ['mcMeaning','LEVEL 2','Meaning MC','Japanese → Chinese','Build fast recognition with four choices.'],
     ['mcJapanese','LEVEL 3','Japanese MC','Chinese → Japanese','Recall the Japanese from its Chinese meaning.'],
-    ['written','LEVEL 4','Written answer','Chinese → type Japanese','Type Japanese or romaji. Mistakes show the answer and loop back.']
+    ['written','LEVEL 4','Written answer','Chinese → type Japanese','Type Japanese or romaji. Mistakes show the answer and loop back.'],
+    ['cloze','LEVEL 5','重組句子','Chinese → build Japanese','Tap the boxes in the correct order. Wrong sentences are explained and return.'],
+    ['grammarMC','LEVEL 6','Grammar challenge','Particles · tense · existence','Choose は・に・と・や・も and the correct verb form from your notes.']
   ];
   document.querySelector('#app').innerHTML=`
     <section class="hero compact-hero"><p class="eyebrow">N5 PRACTICE LAB</p><h1>Choose your challenge.</h1><p class="lead">Start with recognition, then work up to writing from memory. Every wrong answer returns in the same loop.</p></section>
@@ -301,7 +306,7 @@ function renderPracticeHub(){
     </section>
     <div class="quick-decks"><button class="secondary-button" data-quick="Family tree">家 Family tree</button><button class="secondary-button" data-quick="Numbers">一 Numbers</button><button class="secondary-button" data-quick="Directions">↗ Directions</button><button class="secondary-button" data-quick="Actions">今 Actions</button></div>
     <p class="practice-note">${due} cards are due. Practice modes use the due queue first; choose a quick deck to cram one topic.</p>`;
-  document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>startReview({mode:b.dataset.mode,all:false}));
+  document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>['cloze','grammarMC'].includes(b.dataset.mode)?startDrill(b.dataset.mode):startReview({mode:b.dataset.mode,all:false}));
   document.querySelectorAll('[data-quick]').forEach(b=>b.onclick=()=>startReview({mode:'flip',topic:b.dataset.quick,all:true}));
 }
 
@@ -319,6 +324,40 @@ function startReview(options={}){
     state.session={queue, initial:queue.length, completed:0, topic:options.topic||'', mode:options.mode||'flip', revealed:false, feedback:null, optionIds:null}; save();
   }
   renderReview();
+}
+
+function startDrill(mode){
+  currentView='review';
+  const wanted=mode==='cloze'?'cloze':'mc';
+  const pool=(window.lessonDrills||[]).filter(d=>d.t===wanted).map((d,i)=>({...d,id:`${wanted}-${i}`}));
+  state.drill={mode,queue:pool.sort(()=>Math.random()-.5),initial:pool.length,clear:0,chosen:[],feedback:null};
+  save(); renderDrill();
+}
+function renderDrill(){
+  const d=state.drill;
+  if(!d||!d.queue.length){state.drill=null;state.sessions++;save();document.querySelector('#app').innerHTML=`<section class="review-wrap"><div class="empty-state"><div class="big">🏆</div><h2>Lesson cleared!</h2><p class="muted">答錯的題目已經全部再做一次。今日完成 +${d?d.clear*10:0} XP。</p><button class="primary-button" data-back>返回練習</button></div></section>`;document.querySelector('[data-back]').onclick=()=>setView('review');return;}
+  const q=d.queue[0],pct=Math.round(d.clear/Math.max(1,d.initial)*100);
+  let body='';
+  if(q.t==='cloze'){
+    const shuffled=q._shuffled||(q._shuffled=[...q.parts].sort(()=>Math.random()-.5));
+    const available=shuffled.map((p,i)=>({p,i})).filter(x=>!d.chosen.includes(x.i));
+    body=`<article class="quiz-card"><span class="card-topic">${esc(q.topic)}</span><p class="prompt-label">重組成正確日文句子</p><h2 class="sentence-prompt">${esc(q.q)}</h2><div class="sentence-answer">${d.chosen.map(i=>`<button data-remove="${i}">${esc(shuffled[i])}</button>`).join('')||'<span>按下面的字詞填入答案</span>'}</div><div class="word-bank">${available.map(x=>`<button data-word="${x.i}">${esc(x.p)}</button>`).join('')}</div>${d.feedback?drillFeedback(q,d.feedback):`<button class="primary-button full" data-check ${d.chosen.length?'':'disabled'}>檢查答案</button>`}</article>`;
+  }else{
+    body=`<article class="quiz-card"><span class="card-topic">${esc(q.topic)}</span><p class="prompt-label">選擇正確答案</p><h2 class="sentence-prompt">${esc(q.q)}</h2><div class="mc-options">${q.opts.map(o=>`<button data-gchoice="${esc(o)}" ${d.feedback?'disabled':''} class="${d.feedback?(o===q.a?'correct-option':o===d.feedback.selected?'wrong-option':''):''}">${esc(o)}</button>`).join('')}</div>${d.feedback?drillFeedback(q,d.feedback):''}</article>`;
+  }
+  document.querySelector('#app').innerHTML=`<section class="review-wrap"><div class="duo-status"><span>🔥 ${state.streak}</span><span>💚 ${state.hearts}</span><span>⭐ ${state.xp||0} XP</span></div><div class="review-meta"><button class="chip" data-end-drill>← Modes</button><span>${d.clear} clear · ${d.queue.length} in loop</span></div><div class="review-bar"><i style="width:${pct}%"></i></div>${body}</section>`;
+  document.querySelector('[data-end-drill]').onclick=()=>{state.drill=null;save();setView('review')};
+  document.querySelectorAll('[data-word]').forEach(b=>b.onclick=()=>{d.chosen.push(Number(b.dataset.word));save();renderDrill()});
+  document.querySelectorAll('[data-remove]').forEach(b=>b.onclick=()=>{d.chosen=d.chosen.filter(i=>i!==Number(b.dataset.remove));save();renderDrill()});
+  const check=document.querySelector('[data-check]');if(check)check.onclick=()=>{const answer=d.chosen.map(i=>q._shuffled[i]).join('');d.feedback={correct:answer===q.a.join(''),selected:answer};if(!d.feedback.correct){state.hearts=Math.max(0,state.hearts-1)}save();renderDrill()};
+  document.querySelectorAll('[data-gchoice]').forEach(b=>b.onclick=()=>{d.feedback={correct:b.dataset.gchoice===q.a,selected:b.dataset.gchoice};if(!d.feedback.correct)state.hearts=Math.max(0,state.hearts-1);save();renderDrill()});
+  const next=document.querySelector('[data-drill-next]');if(next)next.onclick=()=>finishDrill(q,d.feedback.correct);
+}
+function drillFeedback(q,fb){return `<div class="answer-feedback ${fb.correct?'correct-feedback':'wrong-feedback'}"><strong>${fb.correct?'✓ 答啱！ +10 XP':'再試一次 — 點解會錯？'}</strong><h3>${q.t==='cloze'?esc(q.a.join('')):esc(q.a)}</h3><p>${esc(q.why)}</p><button class="primary-button full" data-drill-next>${fb.correct?'下一題':'明白，稍後再考我'}</button></div>`}
+function finishDrill(q,correct){
+  const d=state.drill;d.queue.shift();state.reviews++;registerStudy();
+  if(correct){d.clear++;state.xp=(state.xp||0)+10;state.hearts=Math.min(5,(state.hearts||0)+1)}else{d.queue.splice(Math.min(3,d.queue.length),0,{...q,_shuffled:undefined});}
+  d.chosen=[];d.feedback=null;save();renderDrill();
 }
 function chineseOnly(card){ return card.meaning.split('·')[0].trim(); }
 function normalizeAnswer(value=''){ return String(value).toLowerCase().replace(/[\s。、，,.!?！？~〜・]/g,'').replace(/ō/g,'ou').replace(/ū/g,'uu'); }
