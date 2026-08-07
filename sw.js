@@ -1,5 +1,5 @@
-const CACHE='nihon-loop-v11';
-const CORE=['./','./index.html','./styles.css','./lesson-data.js','./curriculum-data.js','./app.js','./manifest.webmanifest','./icon.svg','./mascot.png'];
+const CACHE='nihon-loop-v12';
+const CORE=['./','./index.html','./styles.css?v=12','./lesson-data.js?v=12','./curriculum-data.js?v=12','./app.js?v=12','./manifest.webmanifest','./icon.svg','./mascot.png'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(hit=>hit||fetch(e.request).then(res=>{if(e.request.url.includes('/public/photos/')){const copy=res.clone();caches.open(CACHE).then(c=>c.put(e.request,copy));}return res;}))));
