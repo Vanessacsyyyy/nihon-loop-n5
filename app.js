@@ -198,7 +198,54 @@ const extraCards = [
   ['〜ませんか','〜ませんか','一起～嗎 · invitation','N5 Grammar','いっしょに映画を見ませんか。']
 ].map((x, i) => ({ id: `e${i+1}`, jp:x[0], kana:x[1], meaning:x[2], topic:x[3], example:x[4], custom:false }));
 
-const starterCards = [...baseCards, ...extraCards, ...(window.photoCards || [])];
+const numberExpansion = [
+  ['一月','いちがつ','一月 · January','一月一日は休みです。'],
+  ['二月','にがつ','二月 · February','二月は寒いです。'],
+  ['三月','さんがつ','三月 · March','三月に試験があります。'],
+  ['四月','しがつ','四月 · April','学校は四月からです。'],
+  ['五月','ごがつ','五月 · May','五月五日は子どもの日です。'],
+  ['六月','ろくがつ','六月 · June','六月は雨が多いです。'],
+  ['七月','しちがつ','七月 · July','七月に日本へ行きます。'],
+  ['八月','はちがつ','八月 · August','八月は暑いです。'],
+  ['九月','くがつ','九月 · September','九月に香港へ帰ります。'],
+  ['十月','じゅうがつ','十月 · October','十月十日は月曜日です。'],
+  ['十一月','じゅういちがつ','十一月 · November','私の誕生日は十一月二日です。'],
+  ['十二月','じゅうにがつ','十二月 · December','十二月三十一日は大晦日です。'],
+  ['三日','みっか','三號／三日 · third/three days','三日に会いましょう。'],
+  ['四日','よっか','四號／四日 · fourth/four days','四日は火曜日です。'],
+  ['五日','いつか','五號／五日 · fifth/five days','五月五日です。'],
+  ['六日','むいか','六號／六日 · sixth/six days','六日休みました。'],
+  ['八日','ようか','八號／八日 · eighth/eight days','八日に試験があります。'],
+  ['九日','ここのか','九號／九日 · ninth/nine days','九日は金曜日です。'],
+  ['十日','とおか','十號／十日 · tenth/ten days','十日まで勉強します。'],
+  ['十四日','じゅうよっか','十四號 · fourteenth','試験は十四日です。'],
+  ['月曜日','げつようび','星期一 · Monday','今日は月曜日です。'],
+  ['火曜日','かようび','星期二 · Tuesday','火曜日に日本語を勉強します。'],
+  ['水曜日','すいようび','星期三 · Wednesday','私の誕生日は水曜日です。'],
+  ['木曜日','もくようび','星期四 · Thursday','木曜日は休みです。'],
+  ['金曜日','きんようび','星期五 · Friday','金曜日に友達と会います。'],
+  ['土曜日','どようび','星期六 · Saturday','土曜日に買い物をします。'],
+  ['日曜日','にちようび','星期日 · Sunday','日曜日は働きません。'],
+  ['一階','いっかい','一樓 · first floor','受付は一階です。'],
+  ['二階','にかい','二樓 · second floor','事務所は二階です。'],
+  ['三階','さんがい','三樓 · third floor','教室は三階です。'],
+  ['六階','ろっかい','六樓 · sixth floor','会議室は六階です。'],
+  ['八階','はっかい','八樓 · eighth floor','食堂は八階です。'],
+  ['十階','じゅっかい','十樓 · tenth floor','会社は十階です。'],
+  ['四時半','よじはん','四點半 · 4:30','四時半に帰ります。'],
+  ['七時十五分','しちじじゅうごふん','七點十五分 · 7:15','七時十五分に起きます。'],
+  ['九時四十分','くじよんじゅっぷん','九點四十分 · 9:40','授業は九時四十分からです。'],
+  ['五時から十一時まで','ごじからじゅういちじまで','由五點至十一點 · 5–11','五時から十一時まで働きます。'],
+  ['百五十円','ひゃくごじゅうえん','150日圓 · ¥150','水は百五十円です。'],
+  ['千二百円','せんにひゃくえん','1,200日圓 · ¥1,200','この本は千二百円です。'],
+  ['三千八百円','さんぜんはっぴゃくえん','3,800日圓 · ¥3,800','鞄は三千八百円です。'],
+  ['一枚','いちまい','一張／一件薄物 · one flat item','切符を一枚ください。'],
+  ['二本','にほん','兩支／兩件長物 · two long items','鉛筆が二本あります。'],
+  ['三冊','さんさつ','三本書 · three books','本を三冊買いました。'],
+  ['四匹','よんひき','四隻小動物 · four small animals','猫が四匹います。']
+].map((x,i)=>({id:`n${i+1}`,jp:x[0],kana:x[1],meaning:x[2],topic:'Numbers',example:x[3],custom:false}));
+
+const starterCards = [...baseCards, ...extraCards, ...numberExpansion, ...(window.photoCards || [])];
 
 const photos = [
   ...Array.from({length:56}, (_,i) => `IMG_${1786+i}.jpg`),
@@ -230,6 +277,10 @@ function registerStudy(){
 }
 function toast(message){ const el=document.querySelector('#toast'); el.textContent=message; el.classList.add('show'); clearTimeout(toast.t); toast.t=setTimeout(()=>el.classList.remove('show'),1800); }
 function esc(value=''){ return String(value).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
+function jpHtml(card){
+  const jp=esc(card.jp), kana=esc(card.kana);
+  return /[一-龯々]/.test(card.jp) ? `<ruby>${jp}<rt>${kana}</rt></ruby>` : jp;
+}
 function toRomaji(input=''){
   const pairs={
     'きゃ':'kya','きゅ':'kyu','きょ':'kyo','しゃ':'sha','しゅ':'shu','しょ':'sho','ちゃ':'cha','ちゅ':'chu','ちょ':'cho','にゃ':'nya','にゅ':'nyu','にょ':'nyo','ひゃ':'hya','ひゅ':'hyu','ひょ':'hyo','みゃ':'mya','みゅ':'myu','みょ':'myo','りゃ':'rya','りゅ':'ryu','りょ':'ryo','ぎゃ':'gya','ぎゅ':'gyu','ぎょ':'gyo','じゃ':'ja','じゅ':'ju','じょ':'jo','びゃ':'bya','びゅ':'byu','びょ':'byo','ぴゃ':'pya','ぴゅ':'pyu','ぴょ':'pyo','てぃ':'ti','でぃ':'di','ふぁ':'fa','ふぃ':'fi','ふぇ':'fe','ふぉ':'fo'
@@ -269,7 +320,7 @@ function renderHome(){
     <section class="hero mascot-hero"><div><p class="eyebrow">30-DAY N5 EXAM PATH</p><h1>每日答到熟。<br>錯題不停返嚟。</h1><p class="lead">根據你影的課本頁製作：vocab、日期、星期、價錢、助詞、存在句、過去式、否定句及日文問句。</p></div><img src="mascot.png" alt="Nihon Loop 小狐狸拿着平假名卡打招呼"></section>
     <section class="today-card">
       <div class="today-top"><div><p class="eyebrow">TODAY'S LOOP</p><h2>${due ? 'Ready when you are.' : 'Queue cleared!'}</h2><p>${due ? `${due} cards are waiting. Missed ones loop back until you remember them.` : 'You remembered every card due now. Try a full cram or browse your lesson pages.'}</p></div><div class="due-badge"><span>${due}<small>DUE</small></span></div></div>
-      <button class="primary-button" data-start-review>開始今日 Duolingo 式填充 →</button>
+      <button class="primary-button" data-start-review>開始今日混合訓練 →</button>
       <div class="progress-track"><i style="width:${pct}%"></i></div>
     </section>
     <div class="section-head"><h2>Your rhythm</h2><p>Saved on this phone</p></div>
@@ -281,13 +332,15 @@ function renderHome(){
     <div class="section-head"><h2>Study by topic</h2><p>${cards.length} cards</p></div>
     <section class="topic-grid">${topics.map(([t,icon])=>{const n=cards.filter(c=>c.topic===t).length; return `<button class="topic-card" data-topic="${t}"><span class="topic-icon">${icon}</span><span><strong>${t}</strong><small>${n} cards</small></span></button>`}).join('')}</section>
   `;
-  document.querySelector('[data-start-review]').onclick=()=>startDrill('cloze');
+  document.querySelector('[data-start-review]').onclick=()=>startReview({mode:'mixed',all:false});
   document.querySelectorAll('[data-topic]').forEach(b=>b.onclick=()=>startReview({topic:b.dataset.topic,all:true,mode:'flip'}));
 }
 
 function renderPracticeHub(){
   const due=allCards().filter(isDue).length;
   const modes=[
+    ['mixed','DAILY MIX','每日混合訓練','Different question each time','翻卡、選擇與鍵盤輸入交替出現，避免只靠認答案位置。'],
+    ['numberWritten','NUMBER SPRINT','數字特訓','Dates · time · prices · counters','集中用鍵盤寫月份、日子、星期、時間、樓層、價錢及量詞。'],
     ['flip','LEVEL 1','Flip cards','Chinese → Japanese','Tap to reveal Japanese, romaji, and a sentence.'],
     ['mcMeaning','LEVEL 2','Meaning MC','Japanese → Chinese','Build fast recognition with four choices.'],
     ['mcJapanese','LEVEL 3','Japanese MC','Chinese → Japanese','Recall the Japanese from its Chinese meaning.'],
@@ -306,7 +359,7 @@ function renderPracticeHub(){
     </section>
     <div class="quick-decks"><button class="secondary-button" data-quick="Family tree">家 Family tree</button><button class="secondary-button" data-quick="Numbers">一 Numbers</button><button class="secondary-button" data-quick="Directions">↗ Directions</button><button class="secondary-button" data-quick="Actions">今 Actions</button></div>
     <p class="practice-note">${due} cards are due. Practice modes use the due queue first; choose a quick deck to cram one topic.</p>`;
-  document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>['cloze','grammarMC'].includes(b.dataset.mode)?startDrill(b.dataset.mode):startReview({mode:b.dataset.mode,all:false}));
+  document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>['cloze','grammarMC'].includes(b.dataset.mode)?startDrill(b.dataset.mode):startReview({mode:b.dataset.mode,all:b.dataset.mode==='numberWritten',topic:b.dataset.mode==='numberWritten'?'Numbers':''}));
   document.querySelectorAll('[data-quick]').forEach(b=>b.onclick=()=>startReview({mode:'flip',topic:b.dataset.quick,all:true}));
 }
 
@@ -321,7 +374,7 @@ function startReview(options={}){
   document.querySelectorAll('.bottom-nav button').forEach(b=>b.classList.toggle('active', b.dataset.view==='review'));
   if(options.mode || !state.session || options.all || options.topic){
     const queue=makeQueue(options);
-    state.session={queue, initial:queue.length, completed:0, topic:options.topic||'', mode:options.mode||'flip', revealed:false, feedback:null, optionIds:null}; save();
+    state.session={queue, initial:queue.length, completed:0, topic:options.topic||'', mode:options.mode||'flip', revealed:false, feedback:null, optionIds:null, questionMode:null}; save();
   }
   renderReview();
 }
@@ -375,19 +428,21 @@ function renderReview(){
   const card=allCards().find(c=>c.id===s.queue[0]);
   if(!card){ s.queue.shift(); save(); renderReview(); return; }
   const pct=Math.round(s.completed/Math.max(1,s.initial)*100);
-  const modeNames={flip:'Flip card',mcMeaning:'Meaning MC',mcJapanese:'Japanese MC',written:'Written answer'};
-  if((s.mode==='mcMeaning'||s.mode==='mcJapanese')&&!s.optionIds){s.optionIds=buildOptions(card);save();}
+  const modeNames={flip:'Flip card',mcMeaning:'Meaning MC',mcJapanese:'Japanese MC',written:'Written answer',mixed:'Daily Mix',numberWritten:'Number Sprint'};
+  if(!s.questionMode){s.questionMode=s.mode==='mixed'?['mcMeaning','mcJapanese','written'][s.completed%3]:s.mode==='numberWritten'?'written':s.mode;save();}
+  const activeMode=s.questionMode;
+  if((activeMode==='mcMeaning'||activeMode==='mcJapanese')&&!s.optionIds){s.optionIds=buildOptions(card);save();}
   const optionCards=(s.optionIds||[]).map(id=>allCards().find(c=>c.id===id)).filter(Boolean);
   let activity='';
-  if(s.mode==='flip'){
+  if(activeMode==='flip'){
     activity=`<button class="flashcard flip-button ${s.revealed?'is-flipped':''}" data-reveal data-ghost="${esc(card.jp.slice(0,1))}">
       <span class="card-topic">${esc(card.topic)}</span><p class="prompt-label">${s.revealed?'ANSWER':'CHINESE → JAPANESE · TAP TO FLIP'}</p>
-      ${s.revealed?`<h2 class="card-jp">${esc(card.jp)}</h2><p class="card-kana">${esc(card.kana)}</p><p class="card-romaji">${esc(romajiFor(card))}</p><div class="answer"><strong>${esc(card.meaning)}</strong><p class="example">${esc(card.example)}</p></div>`:`<h2 class="card-meaning">${esc(chineseOnly(card))}</h2><p class="tap-hint">Tap the card when you have answered aloud</p>`}
+      ${s.revealed?`<h2 class="card-jp">${jpHtml(card)}</h2><p class="card-romaji">${esc(romajiFor(card))}</p><div class="answer"><strong>${esc(card.meaning)}</strong><p class="example">${esc(card.example)}</p></div>`:`<h2 class="card-meaning">${esc(chineseOnly(card))}</h2><p class="tap-hint">Tap the card when you have answered aloud</p>`}
     </button>${s.revealed?`<div class="rating-row"><button class="again" data-rate="again">Again<small>keep in loop</small></button><button class="hard" data-rate="hard">Hard<small>show soon</small></button><button class="got" data-rate="got">Got it<small>move forward</small></button></div>`:''}`;
-  } else if(s.mode==='mcMeaning'||s.mode==='mcJapanese'){
-    const recall=s.mode==='mcJapanese';
-    activity=`<article class="quiz-card"><span class="card-topic">${esc(card.topic)}</span><p class="prompt-label">${recall?'CHINESE → CHOOSE JAPANESE':'JAPANESE → CHOOSE CHINESE'}</p><h2 class="quiz-prompt">${recall?esc(chineseOnly(card)):esc(card.jp)}</h2>${!recall?`<p class="card-romaji muted-romaji">${esc(romajiFor(card))}</p>`:''}
-      <div class="mc-options">${optionCards.map(c=>`<button data-option="${c.id}" ${s.feedback?'disabled':''} class="${s.feedback?(c.id===card.id?'correct-option':c.id===s.feedback.selected?'wrong-option':''):''}">${recall?`<strong>${esc(c.jp)}</strong><small>${esc(romajiFor(c))}</small>`:esc(chineseOnly(c))}</button>`).join('')}</div>
+  } else if(activeMode==='mcMeaning'||activeMode==='mcJapanese'){
+    const recall=activeMode==='mcJapanese';
+    activity=`<article class="quiz-card"><span class="card-topic">${esc(card.topic)}</span><p class="prompt-label">${recall?'CHINESE → CHOOSE JAPANESE':'JAPANESE → CHOOSE CHINESE'}</p><h2 class="quiz-prompt">${recall?esc(chineseOnly(card)):jpHtml(card)}</h2>
+      <div class="mc-options">${optionCards.map(c=>`<button data-option="${c.id}" ${s.feedback?'disabled':''} class="${s.feedback?(c.id===card.id?'correct-option':c.id===s.feedback.selected?'wrong-option':''):''}">${recall?`<strong>${jpHtml(c)}</strong><small>${esc(romajiFor(c))}</small>`:esc(chineseOnly(c))}</button>`).join('')}</div>
       ${s.feedback?feedbackHtml(card,s.feedback.correct):''}</article>`;
   } else {
     activity=`<article class="quiz-card"><span class="card-topic">${esc(card.topic)}</span><p class="prompt-label">CHINESE → TYPE JAPANESE OR ROMAJI</p><h2 class="quiz-prompt">${esc(chineseOnly(card))}</h2>
@@ -400,7 +455,7 @@ function renderReview(){
       ${activity}
     </section>`;
   document.querySelector('[data-end]').onclick=()=>{state.session=null;save();setView('review')};
-  if(s.mode==='flip') document.querySelector('[data-reveal]').onclick=()=>{if(!s.revealed){s.revealed=true;save();renderReview()}};
+  if(activeMode==='flip') document.querySelector('[data-reveal]').onclick=()=>{if(!s.revealed){s.revealed=true;save();renderReview()}};
   document.querySelectorAll('[data-rate]').forEach(b=>b.onclick=()=>rate(card,b.dataset.rate));
   document.querySelectorAll('[data-option]').forEach(b=>b.onclick=()=>{s.feedback={correct:b.dataset.option===card.id,selected:b.dataset.option};save();renderReview()});
   const written=document.querySelector('#written-form');
@@ -408,14 +463,14 @@ function renderReview(){
   const next=document.querySelector('[data-next]'); if(next) next.onclick=()=>finalizeQuiz(card,s.feedback.correct);
 }
 function feedbackHtml(card,correct){
-  return `<div class="answer-feedback ${correct?'correct-feedback':'wrong-feedback'}"><strong>${correct?'✓ Correct!':'Not quite — here is the answer'}</strong><h3>${esc(card.jp)}</h3><p class="card-kana">${esc(card.kana)}</p><p class="card-romaji">${esc(romajiFor(card))}</p><p>${esc(card.meaning)}</p><p class="example">${esc(card.example)}</p><button class="primary-button full" data-next>${correct?'Next card':'Got it — show me again later'}</button></div>`;
+  return `<div class="answer-feedback ${correct?'correct-feedback':'wrong-feedback'}"><strong>${correct?'✓ Correct!':'Not quite — here is the answer'}</strong><h3>${jpHtml(card)}</h3><p class="card-romaji">${esc(romajiFor(card))}</p><p>${esc(card.meaning)}</p><p class="example">${esc(card.example)}</p><button class="primary-button full" data-next>${correct?'Next card':'Got it — show me again later'}</button></div>`;
 }
 function finalizeQuiz(card,correct){
   const p=progress(card.id),now=Date.now(),day=86400000,s=state.session;
   p.seen++;state.reviews++;registerStudy();s.queue.shift();
   if(correct){p.level=Math.min(5,p.level+1);p.due=now+[0,1,3,7,14,30][p.level]*day;s.completed++;}
   else{p.level=Math.max(0,p.level-1);p.lapses++;p.due=now+10*60*1000;s.queue.splice(Math.min(3,s.queue.length),0,card.id);}
-  state.progress[card.id]=p;s.feedback=null;s.optionIds=null;save();renderReview();
+  state.progress[card.id]=p;s.feedback=null;s.optionIds=null;s.questionMode=null;save();renderReview();
 }
 function rate(card, rating){
   const p=progress(card.id), now=Date.now(), day=86400000;
@@ -430,7 +485,7 @@ function rate(card, rating){
   } else {
     p.level=Math.min(5,p.level+1); p.due=now+[0,1,3,7,14,30][p.level]*day; state.session.completed++;
   }
-  state.progress[card.id]=p; state.session.revealed=false; state.session.feedback=null; state.session.optionIds=null; save(); renderReview();
+  state.progress[card.id]=p; state.session.revealed=false; state.session.feedback=null; state.session.optionIds=null; state.session.questionMode=null; save(); renderReview();
 }
 function renderComplete(){
   state.sessions++; state.session=null; save();
@@ -470,7 +525,7 @@ function renderCards(){
   const update=()=>{
     const q=document.querySelector('#card-search').value.toLowerCase();
     const shown=cards.filter(c=>(filter==='All'||c.topic===filter)&&[c.jp,c.kana,romajiFor(c),c.meaning,c.example].join(' ').toLowerCase().includes(q));
-    document.querySelector('#card-list').innerHTML=shown.map(c=>`<article class="list-card"><div><strong>${esc(c.jp)}</strong><p>${esc(c.kana)} · ${esc(romajiFor(c))}<br>${esc(c.meaning)}</p></div><span class="mini-state">${mastered(c)?'Mastered':progress(c.id).seen?'Learning':'New'}</span></article>`).join('')||'<div class="empty-state">No matching cards.</div>';
+    document.querySelector('#card-list').innerHTML=shown.map(c=>`<article class="list-card"><div><strong>${jpHtml(c)}</strong><p>${esc(romajiFor(c))}<br>${esc(c.meaning)}</p></div><span class="mini-state">${mastered(c)?'Mastered':progress(c.id).seen?'Learning':'New'}</span></article>`).join('')||'<div class="empty-state">No matching cards.</div>';
     document.querySelector('#card-count').textContent=`${shown.length} shown`;
   };
   document.querySelector('#card-search').oninput=update;
