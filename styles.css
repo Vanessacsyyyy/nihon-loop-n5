@@ -76,6 +76,21 @@ button:active { transform: scale(.97); }
 .topic-card strong { display: block; margin: 14px 0 4px; }
 .topic-card small { color: var(--muted); }
 
+.lesson-path { display: grid; gap: 10px; }
+.lesson-card { width: 100%; border: 1px solid var(--line); background: white; border-radius: 21px; padding: 16px; display: grid; grid-template-columns: 72px 1fr 34px; gap: 13px; align-items: center; text-align: left; cursor: pointer; }
+.lesson-card:hover { border-color: #aeb9ae; transform: translateY(-1px); }
+.lesson-card.verified { background: linear-gradient(135deg,#f0fae8,#fff); border-color: #b6db9d; }
+.lesson-number { color: var(--green-deep); background: var(--green-soft); border-radius: 12px; padding: 9px 7px; font-size: 10px; line-height: 1.3; font-weight: 900; text-align: center; letter-spacing: .05em; }
+.lesson-copy { min-width: 0; }
+.lesson-copy strong,.lesson-copy small,.lesson-copy em { display: block; }
+.lesson-copy strong { font-size: 17px; }
+.lesson-copy small { color: #4f5952; margin-top: 4px; line-height: 1.35; }
+.lesson-copy em { color: var(--muted); font-size: 10px; font-style: normal; margin-top: 6px; }
+.lesson-go { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--paper); color: var(--green-deep); font-weight: 900; }
+.source-note { display: flex; flex-wrap: wrap; gap: 5px 9px; align-items: center; margin: 11px 0 0; color: var(--green-deep); font-size: 10px; line-height: 1.35; }
+.source-note span { padding: 5px 8px; background: var(--green-soft); border-radius: 999px; font-weight: 850; }
+.source-note small { color: var(--muted); font-size: 10px; }
+
 .compact-hero { padding-bottom: 12px; }
 .mode-grid { display: grid; gap: 11px; }
 .mode-card { border: 1px solid var(--line); background: white; border-radius: 22px; padding: 19px; text-align: left; cursor: pointer; display: grid; grid-template-columns: 1fr auto; position: relative; overflow: hidden; }
@@ -180,6 +195,7 @@ button:active { transform: scale(.97); }
 .list-card { border: 1px solid var(--line); background: white; border-radius: 17px; padding: 15px; display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; }
 .list-card strong { font-size: 20px; }
 .list-card p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+.list-card .source-note { margin-top: 8px; }
 .mini-state { border-radius: 999px; padding: 6px 9px; font-size: 10px; font-weight: 800; background: var(--green-soft); color: var(--green-deep); }
 .fab { position: fixed; right: max(22px, calc((100vw - 720px)/2)); bottom: 102px; width: 58px; height: 58px; border-radius: 20px; border: 0; background: var(--ink); color: white; font-size: 27px; box-shadow: var(--shadow); z-index: 12; }
 
@@ -210,6 +226,10 @@ dialog input, dialog textarea { width: 100%; border: 1px solid var(--line); bord
   .app-shell { padding-left: 14px; padding-right: 14px; }
   .flashcard { min-height: 390px; padding: 22px; }
   .rating-row button { font-size: 12px; }
+}
+@media (max-width: 430px) {
+  .lesson-card { grid-template-columns: 63px 1fr 28px; padding: 13px; gap: 10px; }
+  .lesson-copy strong { font-size: 15px; }
 }
 @media (max-width: 540px) {
   .mascot-hero { grid-template-columns:1fr 112px; }

@@ -245,7 +245,7 @@ const numberExpansion = [
   ['四匹','よんひき','四隻小動物 · four small animals','猫が四匹います。']
 ].map((x,i)=>({id:`n${i+1}`,jp:x[0],kana:x[1],meaning:x[2],topic:'Numbers',example:x[3],custom:false}));
 
-const starterCards = [...baseCards, ...extraCards, ...numberExpansion, ...(window.photoCards || [])];
+const starterCards = [...baseCards, ...extraCards, ...numberExpansion, ...(window.photoCards || []), ...(window.pronunciationCards || [])];
 
 const photos = [
   ...Array.from({length:56}, (_,i) => `IMG_${1786+i}.jpg`),
@@ -265,6 +265,19 @@ function load(){
 }
 function save(){ localStorage.setItem(STORE, JSON.stringify(state)); }
 function allCards(){ return [...starterCards, ...state.custom]; }
+function lessonById(id){ return (window.lessonPath||[]).find(unit=>unit.id===id); }
+function cardLesson(card){
+  if(card.lesson) return lessonById(card.lesson);
+  return (window.lessonPath||[]).find(unit=>unit.topics.includes(card.topic));
+}
+function sourceFor(card){
+  if(card.custom) return {source:'你自己新增',kind:'自訂卡片'};
+  if(card.source) return {source:card.source,kind:card.sourceKind||'課本整理'};
+  if(card.topic==='Photo vocab') return {source:'IMG_1921–1950',kind:'工作紙相片範圍 · 待逐詞頁碼核對'};
+  const unit=cardLesson(card);
+  return unit ? {source:unit.sources,kind:'按課本 Lesson 範圍整理'} : {source:'N5 補充題庫',kind:'額外練習'};
+}
+function sourceHtml(card){const s=sourceFor(card);return `<p class="source-note"><span>來源 ${esc(s.source)}</span><small>${esc(s.kind)}</small></p>`;}
 function shuffled(items){
   const copy=[...items];
   for(let i=copy.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[copy[i],copy[j]]=[copy[j],copy[i]];}
@@ -320,7 +333,7 @@ function setView(view, options={}){
 function renderHome(){
   const cards=allCards(), due=cards.filter(isDue).length, done=cards.filter(mastered).length;
   const pct=Math.round(done/cards.length*100);
-  const topics=[['Basics','あ'],['Numbers','一'],['Family tree','家'],['Directions','↗'],['Actions','今'],['N5 Grammar','文'],['Places','駅'],['People','人'],['Family','族'],['Things','本'],['Questions','？'],['Time','時'],['Verbs','動'],['Particles','を']];
+  const topics=[['Pronunciation','声'],['Basics','あ'],['Numbers','一'],['Family tree','家'],['Directions','↗'],['Actions','今'],['N5 Grammar','文'],['Places','駅'],['People','人'],['Family','族'],['Things','本'],['Questions','？'],['Time','時'],['Verbs','動'],['Particles','を']];
   document.querySelector('#app').innerHTML=`
     <section class="hero mascot-hero"><div><p class="eyebrow">30-DAY N5 EXAM PATH</p><h1>每日答到熟。<br>錯題不停返嚟。</h1><p class="lead">根據你影的課本頁製作：vocab、日期、星期、價錢、助詞、存在句、過去式、否定句及日文問句。</p></div><img src="mascot.png" alt="Nihon Loop 小狐狸拿着平假名卡打招呼"></section>
     <section class="today-card">
@@ -334,10 +347,13 @@ function renderHome(){
       <div class="stat"><strong>⭐ ${state.xp||0}</strong><span>XP earned</span></div>
       <div class="stat"><strong>💚 ${state.hearts||5}</strong><span>hearts</span></div>
     </section>
+    <div class="section-head"><h2>按課本 Lesson 溫習</h2><p>${(window.lessonPath||[]).length} units</p></div>
+    <section class="lesson-path">${(window.lessonPath||[]).map((unit,i)=>{const count=cards.filter(c=>c.lesson===unit.id||(!c.lesson&&unit.topics.includes(c.topic))).length;return `<button class="lesson-card ${unit.verified?'verified':''}" data-lesson="${unit.id}"><span class="lesson-number">${unit.label}</span><span class="lesson-copy"><strong>${esc(unit.title)}</strong><small>${esc(unit.focus)}</small><em>${esc(unit.sources)} · ${count} cards${unit.verified?' · 已人工核對':''}</em></span><span class="lesson-go">→</span></button>`}).join('')}</section>
     <div class="section-head"><h2>Study by topic</h2><p>${cards.length} cards</p></div>
     <section class="topic-grid">${topics.map(([t,icon])=>{const n=cards.filter(c=>c.topic===t).length; return `<button class="topic-card" data-topic="${t}"><span class="topic-icon">${icon}</span><span><strong>${t}</strong><small>${n} cards</small></span></button>`}).join('')}</section>
   `;
   document.querySelector('[data-start-review]').onclick=()=>startReview({mode:'mixed',all:false});
+  document.querySelectorAll('[data-lesson]').forEach(b=>b.onclick=()=>startReview({lesson:b.dataset.lesson,all:true,mode:'mixed'}));
   document.querySelectorAll('[data-topic]').forEach(b=>b.onclick=()=>startReview({topic:b.dataset.topic,all:true,mode:'flip'}));
 }
 
@@ -362,16 +378,17 @@ function renderPracticeHub(){
       <i></i><div class="family-generation"><span>父<br><small>chichi</small></span><span>母<br><small>haha</small></span></div>
       <i></i><div class="family-generation three"><span>兄／姉<br><small>ani / ane</small></span><span>私<br><small>watashi</small></span><span>弟／妹<br><small>otōto / imōto</small></span></div>
     </section>
-    <div class="quick-decks"><button class="secondary-button" data-quick="Family tree">家 Family tree</button><button class="secondary-button" data-quick="Numbers">一 Numbers</button><button class="secondary-button" data-quick="Directions">↗ Directions</button><button class="secondary-button" data-quick="Actions">今 Actions</button></div>
+    <div class="quick-decks"><button class="secondary-button" data-quick="Pronunciation">声 Pronunciation</button><button class="secondary-button" data-quick="Family tree">家 Family tree</button><button class="secondary-button" data-quick="Numbers">一 Numbers</button><button class="secondary-button" data-quick="Directions">↗ Directions</button><button class="secondary-button" data-quick="Actions">今 Actions</button><button class="secondary-button" data-quick="N5 Grammar">文 Grammar</button></div>
     <p class="practice-note">${due} cards are due. Practice modes use the due queue first; choose a quick deck to cram one topic.</p>`;
   document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>['cloze','grammarMC'].includes(b.dataset.mode)?startDrill(b.dataset.mode):startReview({mode:b.dataset.mode,all:b.dataset.mode==='numberWritten',topic:b.dataset.mode==='numberWritten'?'Numbers':''}));
   document.querySelectorAll('[data-quick]').forEach(b=>b.onclick=()=>startReview({mode:'flip',topic:b.dataset.quick,all:true}));
 }
 
 function makeQueue(options={}){
-  let pool=allCards().filter(c=>!options.topic || c.topic===options.topic);
+  const unit=lessonById(options.lesson);
+  let pool=allCards().filter(c=>(!options.topic || c.topic===options.topic)&&(!unit || c.lesson===unit.id || (!c.lesson&&unit.topics.includes(c.topic))));
   if(!options.all) pool=pool.filter(isDue);
-  if(!pool.length) pool=allCards().filter(c=>!options.topic || c.topic===options.topic);
+  if(!pool.length) pool=allCards().filter(c=>(!options.topic || c.topic===options.topic)&&(!unit || c.lesson===unit.id || (!c.lesson&&unit.topics.includes(c.topic))));
   pool=shuffled(pool);
   if(['mixed','numberWritten'].includes(options.mode)){
     const recent=new Set((state.recentQuestions||{})[options.mode]||[]);
@@ -384,13 +401,13 @@ function makeQueue(options={}){
 function startReview(options={}){
   currentView='review';
   document.querySelectorAll('.bottom-nav button').forEach(b=>b.classList.toggle('active', b.dataset.view==='review'));
-  if(options.mode || !state.session || options.all || options.topic){
+  if(options.mode || !state.session || options.all || options.topic || options.lesson){
     const queue=makeQueue(options);
     if(['mixed','numberWritten'].includes(options.mode)){
       state.recentQuestions=state.recentQuestions||{};
       state.recentQuestions[options.mode]=queue.slice(0,30);
     }
-    state.session={queue, initial:queue.length, completed:0, topic:options.topic||'', mode:options.mode||'flip', revealed:false, feedback:null, optionIds:null, questionMode:null, lastQuestionMode:null}; save();
+    state.session={queue, initial:queue.length, completed:0, topic:options.topic||'', lesson:options.lesson||'', mode:options.mode||'flip', revealed:false, feedback:null, optionIds:null, questionMode:null, lastQuestionMode:null}; save();
   }
   renderReview();
 }
@@ -460,7 +477,7 @@ function renderReview(){
   if(activeMode==='flip'){
     activity=`<button class="flashcard flip-button ${s.revealed?'is-flipped':''}" data-reveal data-ghost="${esc(card.jp.slice(0,1))}">
       <span class="card-topic">${esc(card.topic)}</span><p class="prompt-label">${s.revealed?'ANSWER':'CHINESE → JAPANESE · TAP TO FLIP'}</p>
-      ${s.revealed?`<h2 class="card-jp">${jpHtml(card)}</h2><p class="card-romaji">${esc(romajiFor(card))}</p><div class="answer"><strong>${esc(card.meaning)}</strong><p class="example">${esc(card.example)}</p></div>`:`<h2 class="card-meaning">${esc(chineseOnly(card))}</h2><p class="tap-hint">Tap the card when you have answered aloud</p>`}
+      ${s.revealed?`<h2 class="card-jp">${jpHtml(card)}</h2><p class="card-romaji">${esc(romajiFor(card))}</p><div class="answer"><strong>${esc(card.meaning)}</strong><p class="example">${esc(card.example)}</p>${sourceHtml(card)}</div>`:`<h2 class="card-meaning">${esc(chineseOnly(card))}</h2><p class="tap-hint">Tap the card when you have answered aloud</p>`}
     </button>${s.revealed?`<div class="rating-row"><button class="again" data-rate="again">Again<small>keep in loop</small></button><button class="hard" data-rate="hard">Hard<small>show soon</small></button><button class="got" data-rate="got">Got it<small>move forward</small></button></div>`:''}`;
   } else if(activeMode==='mcMeaning'||activeMode==='mcJapanese'){
     const recall=activeMode==='mcJapanese';
@@ -473,7 +490,7 @@ function renderReview(){
   }
   document.querySelector('#app').innerHTML=`
     <section class="review-wrap">
-      <div class="review-meta"><button class="chip" data-end>← Modes</button><span>${s.completed} clear · ${s.queue.length} in loop</span><span class="chip mode-chip">${modeNames[s.mode]}</span></div>
+      <div class="review-meta"><button class="chip" data-end>← Modes</button><span>${s.completed} clear · ${s.queue.length} in loop</span><span class="chip mode-chip">${s.lesson?esc(lessonById(s.lesson)?.label||modeNames[s.mode]):modeNames[s.mode]}</span></div>
       <div class="review-bar"><i style="width:${pct}%"></i></div>
       ${activity}
     </section>`;
@@ -486,7 +503,7 @@ function renderReview(){
   const next=document.querySelector('[data-next]'); if(next) next.onclick=()=>finalizeQuiz(card,s.feedback.correct);
 }
 function feedbackHtml(card,correct){
-  return `<div class="answer-feedback ${correct?'correct-feedback':'wrong-feedback'}"><strong>${correct?'✓ Correct!':'Not quite — here is the answer'}</strong><h3>${jpHtml(card)}</h3><p class="card-romaji">${esc(romajiFor(card))}</p><p>${esc(card.meaning)}</p><p class="example">${esc(card.example)}</p><button class="primary-button full" data-next>${correct?'Next card':'Got it — show me again later'}</button></div>`;
+  return `<div class="answer-feedback ${correct?'correct-feedback':'wrong-feedback'}"><strong>${correct?'✓ Correct!':'Not quite — here is the answer'}</strong><h3>${jpHtml(card)}</h3><p class="card-romaji">${esc(romajiFor(card))}</p><p>${esc(card.meaning)}</p><p class="example">${esc(card.example)}</p>${sourceHtml(card)}<button class="primary-button full" data-next>${correct?'Next card':'Got it — show me again later'}</button></div>`;
 }
 function finalizeQuiz(card,correct){
   const p=progress(card.id),now=Date.now(),day=86400000,s=state.session;
@@ -548,7 +565,7 @@ function renderCards(){
   const update=()=>{
     const q=document.querySelector('#card-search').value.toLowerCase();
     const shown=cards.filter(c=>(filter==='All'||c.topic===filter)&&[c.jp,c.kana,romajiFor(c),c.meaning,c.example].join(' ').toLowerCase().includes(q));
-    document.querySelector('#card-list').innerHTML=shown.map(c=>`<article class="list-card"><div><strong>${jpHtml(c)}</strong><p>${esc(romajiFor(c))}<br>${esc(c.meaning)}</p></div><span class="mini-state">${mastered(c)?'Mastered':progress(c.id).seen?'Learning':'New'}</span></article>`).join('')||'<div class="empty-state">No matching cards.</div>';
+    document.querySelector('#card-list').innerHTML=shown.map(c=>`<article class="list-card"><div><strong>${jpHtml(c)}</strong><p>${esc(romajiFor(c))}<br>${esc(c.meaning)}</p>${sourceHtml(c)}</div><span class="mini-state">${mastered(c)?'Mastered':progress(c.id).seen?'Learning':'New'}</span></article>`).join('')||'<div class="empty-state">No matching cards.</div>';
     document.querySelector('#card-count').textContent=`${shown.length} shown`;
   };
   document.querySelector('#card-search').oninput=update;
