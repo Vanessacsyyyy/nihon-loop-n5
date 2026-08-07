@@ -353,7 +353,7 @@ function renderHome(){
     <section class="topic-grid">${topics.map(([t,icon])=>{const n=cards.filter(c=>c.topic===t).length; return `<button class="topic-card" data-topic="${t}"><span class="topic-icon">${icon}</span><span><strong>${t}</strong><small>${n} cards</small></span></button>`}).join('')}</section>
   `;
   document.querySelector('[data-start-review]').onclick=()=>startReview({mode:'mixed',all:false});
-  document.querySelectorAll('[data-lesson]').forEach(b=>b.onclick=()=>startReview({lesson:b.dataset.lesson,all:true,mode:'mixed'}));
+  document.querySelectorAll('[data-lesson]').forEach(b=>b.onclick=()=>startReview({lesson:b.dataset.lesson,topic:b.dataset.lesson==='pronunciation'?'Pronunciation':'',all:true,mode:'mixed'}));
   document.querySelectorAll('[data-topic]').forEach(b=>b.onclick=()=>startReview({topic:b.dataset.topic,all:true,mode:'flip'}));
 }
 
