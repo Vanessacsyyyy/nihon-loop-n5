@@ -266,7 +266,7 @@ function renderHome(){
   const pct=Math.round(done/cards.length*100);
   const topics=[['Basics','あ'],['Numbers','一'],['Family tree','家'],['Directions','↗'],['Actions','今'],['N5 Grammar','文'],['Places','駅'],['People','人'],['Family','族'],['Things','本'],['Questions','？'],['Time','時'],['Verbs','動'],['Particles','を']];
   document.querySelector('#app').innerHTML=`
-    <section class="hero"><p class="eyebrow">30-DAY N5 EXAM PATH</p><h1>每日答到熟。<br>錯題不停返嚟。</h1><p class="lead">根據你影的課本頁製作：vocab、日期、星期、價錢、助詞、存在句、過去式、否定句及日文問句。</p></section>
+    <section class="hero mascot-hero"><div><p class="eyebrow">30-DAY N5 EXAM PATH</p><h1>每日答到熟。<br>錯題不停返嚟。</h1><p class="lead">根據你影的課本頁製作：vocab、日期、星期、價錢、助詞、存在句、過去式、否定句及日文問句。</p></div><img src="mascot.png" alt="Nihon Loop 小狐狸拿着平假名卡打招呼"></section>
     <section class="today-card">
       <div class="today-top"><div><p class="eyebrow">TODAY'S LOOP</p><h2>${due ? 'Ready when you are.' : 'Queue cleared!'}</h2><p>${due ? `${due} cards are waiting. Missed ones loop back until you remember them.` : 'You remembered every card due now. Try a full cram or browse your lesson pages.'}</p></div><div class="due-badge"><span>${due}<small>DUE</small></span></div></div>
       <button class="primary-button" data-start-review>開始今日 Duolingo 式填充 →</button>
@@ -353,7 +353,7 @@ function renderDrill(){
   document.querySelectorAll('[data-gchoice]').forEach(b=>b.onclick=()=>{d.feedback={correct:b.dataset.gchoice===q.a,selected:b.dataset.gchoice};if(!d.feedback.correct)state.hearts=Math.max(0,state.hearts-1);save();renderDrill()});
   const next=document.querySelector('[data-drill-next]');if(next)next.onclick=()=>finishDrill(q,d.feedback.correct);
 }
-function drillFeedback(q,fb){return `<div class="answer-feedback ${fb.correct?'correct-feedback':'wrong-feedback'}"><strong>${fb.correct?'✓ 答啱！ +10 XP':'再試一次 — 點解會錯？'}</strong><h3>${q.t==='cloze'?esc(q.a.join('')):esc(q.a)}</h3><p>${esc(q.why)}</p><button class="primary-button full" data-drill-next>${fb.correct?'下一題':'明白，稍後再考我'}</button></div>`}
+function drillFeedback(q,fb){return `<div class="answer-feedback mascot-feedback ${fb.correct?'correct-feedback':'wrong-feedback'}"><img src="mascot.png" alt="鼓勵你繼續學習的小狐狸"><div><strong>${fb.correct?'✓ 答啱！ +10 XP':'再試一次 — 點解會錯？'}</strong><h3>${q.t==='cloze'?esc(q.a.join('')):esc(q.a)}</h3><p>${esc(q.why)}</p></div><button class="primary-button full" data-drill-next>${fb.correct?'下一題':'明白，稍後再考我'}</button></div>`}
 function finishDrill(q,correct){
   const d=state.drill;d.queue.shift();state.reviews++;registerStudy();
   if(correct){d.clear++;state.xp=(state.xp||0)+10;state.hearts=Math.min(5,(state.hearts||0)+1)}else{d.queue.splice(Math.min(3,d.queue.length),0,{...q,_shuffled:undefined});}

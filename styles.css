@@ -29,6 +29,8 @@ main:focus { outline: none; }
 .icon-button, .close-button { border: 1px solid var(--line); background: rgba(255,255,255,.7); height: 42px; min-width: 42px; border-radius: 14px; cursor: pointer; font-weight: 800; }
 
 .hero { padding: 28px 0 22px; }
+.mascot-hero { display:grid; grid-template-columns:minmax(0,1fr) 170px; align-items:end; gap:8px; padding-top:12px; }
+.mascot-hero img { width:190px; max-height:225px; object-fit:contain; object-position:bottom; justify-self:end; filter:drop-shadow(0 12px 10px rgba(23,32,27,.13)); }
 .eyebrow { font-size: 11px; font-weight: 850; letter-spacing: .12em; color: var(--green); margin: 0 0 9px; }
 h1, h2, h3, p { margin-top: 0; }
 h1 { max-width: 580px; font-size: clamp(38px, 8vw, 64px); line-height: .98; letter-spacing: -.055em; margin-bottom: 18px; }
@@ -119,6 +121,11 @@ button:active { transform: scale(.97); }
 .mc-options .wrong-option { background: #fde7e5; border-color: #e7aaa5; color: #993f3f; }
 .answer-feedback { border-radius: 18px; padding: 18px; margin-top: 22px; animation: rise .25s ease both; }
 .answer-feedback > strong { display: block; margin-bottom: 13px; }
+.mascot-feedback { display:grid; grid-template-columns:72px 1fr; gap:12px; align-items:center; }
+.mascot-feedback > img { width:72px; height:92px; object-fit:cover; object-position:50% 10%; align-self:end; }
+.mascot-feedback > div > strong { display:block; margin-bottom:8px; }
+.mascot-feedback > div h3,.mascot-feedback > div p { margin-bottom:7px; }
+.mascot-feedback > .full { grid-column:1 / -1; }
 .answer-feedback h3 { font-size: 30px; margin-bottom: 2px; }
 .correct-feedback { background: #edf8f0; }
 .wrong-feedback { background: #fff0ee; }
@@ -200,5 +207,10 @@ dialog input, dialog textarea { width: 100%; border: 1px solid var(--line); bord
   .app-shell { padding-left: 14px; padding-right: 14px; }
   .flashcard { min-height: 390px; padding: 22px; }
   .rating-row button { font-size: 12px; }
+}
+@media (max-width: 540px) {
+  .mascot-hero { grid-template-columns:1fr 112px; }
+  .mascot-hero img { width:135px; max-height:180px; margin-right:-12px; }
+  .mascot-hero h1 { font-size:clamp(34px,10vw,48px); }
 }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; animation: none !important; transition: none !important; } }
